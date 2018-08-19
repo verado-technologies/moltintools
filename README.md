@@ -13,4 +13,3 @@ As you can probably tell from the example above the file argument is a `.csv` fi
 The full list of commands are `create`, `update` and `delete`. You must specify command then file you will see errors.
 
 ### Todo
-- Delete product or products
