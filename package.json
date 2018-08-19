@@ -1,0 +1,13 @@
+{
+  "name": "moltintools",
+  "version": "1.0.0",
+  "description": "A CLI tool for the Moltin eCommerce API",
+  "main": "index.js",
+  "author": "Joe Hill",
+  "license": "MIT",
+  "dependencies": {
+    "@moltin/sdk": "^3.12.1",
+    "csvtojson": "^2.0.8",
+    "dotenv": "^6.0.0"
+  }
+}
