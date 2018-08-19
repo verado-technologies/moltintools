@@ -9,5 +9,10 @@
     "@moltin/sdk": "^3.12.1",
     "csvtojson": "^2.0.8",
     "dotenv": "^6.0.0"
+  },
+  "scripts": {
+    "create": "node index.js create",
+    "update": "node index.js update",
+    "delete": "node index.js delete"
   }
 }
