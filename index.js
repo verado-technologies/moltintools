@@ -1,8 +1,6 @@
-var exports = (module.exports = {});
-
-require("dotenv").config();
-const csv = require("csvtojson");
-const MoltinGateway = require("@moltin/sdk").gateway;
+require('dotenv').config();
+const csv = require('csvtojson');
+const MoltinGateway = require('@moltin/sdk').gateway;
 const Moltin = MoltinGateway({
   client_id: process.env.CLIENT_ID,
   client_secret: process.env.CLIENT_SECRET
@@ -15,24 +13,24 @@ const waitFor = n => new Promise(resolve => setTimeout(resolve, n));
 // Invoke function based on supplied argument
 (async () => {
   switch (command) {
-    case "create":
+    case 'create':
       await createProduct();
       break;
-    case "update":
+    case 'update':
       updateProduct();
       break;
-    case "delete":
+    case 'delete':
       await deleteProduct();
       break;
     default:
       return console.log(
-        "Please supply a valid command such as create, update or delete."
+        'Please supply a valid command such as create, update or delete.'
       );
   }
 })();
 
 function bool(answer) {
-  if (answer == "Yes") {
+  if (answer == 'Yes') {
     return true;
   } else return false;
 }
@@ -42,8 +40,8 @@ async function createProduct() {
   const products = await catalogue;
   for (const item of products) {
     await waitFor(2000);
-    Moltin.Products.Create({
-      type: "product",
+    const createOk = await Moltin.Products.Create({
+      type: 'product',
       //'vendor': `{'id': 'LbdCVOGuS0XEyOiYsJYu5t3qFqs1','name': '${humanNames.maleRandom()}'}`,
       name: item.model,
       brand: item.brand,
@@ -54,13 +52,13 @@ async function createProduct() {
       price: [
         {
           amount: Number(item.watchr_price) * 100,
-          currency: "GBP",
+          currency: 'GBP',
           includes_tax: true
         }
       ],
-      status: "live",
+      status: 'live',
       stock: 1,
-      commodity_type: "physical",
+      commodity_type: 'physical',
       clasp_type: item.clasp_type,
       bracelet_color: item.bracelet_color,
       bracelet_material: item.bracelet_material,
@@ -84,13 +82,20 @@ async function createProduct() {
       functions: item.functions,
       additional_options: item.additional_options,
       images: item.img_link
-    }).then(done => {
-      console.log(
-        `product ${done.data.name} with the ID of ${
-          done.data.id
-        } has beeen created.`
-      );
-    });
+    })
+      .then(done => {
+        console.log(
+          `product ${done.data.name} with the ID of ${
+            done.data.id
+          } has beeen created.`
+        );
+      })
+      .then(() => true)
+      .catch(() => false);
+    if (!createOk) {
+      console.error("No more product('s) to create.");
+      break;
+    }
   }
 }
 
@@ -99,20 +104,21 @@ async function updateProduct() {
   const products = await catalogue;
   for (const item of products) {
     await waitFor(2000);
-    Moltin.Products.Filter({ eq: { sku: item.sku } })
+    const updateOk = await Moltin.Products.Filter({ eq: { sku: item.sku } })
       .All()
-      .then(update => {
+      .then(update =>
         Moltin.Products.Update(update.data[0].id, {
           id: update.data[0].id,
           slug: item.cleanedslug
         })
-          .then(fin => {
-            console.log(fin, "Done");
-          })
-          .catch(function(error) {
-            console.log(error);
-          });
-      });
+      )
+      .then(() => console.log(`Product ${item.sku} has been updated.`))
+      .then(() => true)
+      .catch(() => false);
+    if (!updateOk) {
+      console.error("No more product('s) to update.");
+      break;
+    }
   }
 }
 
@@ -121,15 +127,15 @@ async function deleteProduct() {
   const products = await catalogue;
   for (const item of products) {
     await waitFor(2000);
-    Moltin.Products.Filter({ eq: { sku: item.sku } })
+    const deletedOk = await Moltin.Products.Filter({ eq: { sku: item.sku } })
       .All()
-      .then(async remove => {
-        console.log(`Product ${item.sku} has been deleted.`);
-        try {
-          await Moltin.Products.Delete(remove.data[0].id);
-        } catch (e) {
-          console.error(e);
-        }
-      });
+      .then(remove => Moltin.Products.Delete(remove.data[0].id))
+      .then(() => console.log(`Product ${item.sku} has been deleted.`))
+      .then(() => true)
+      .catch(() => false);
+    if (!deletedOk) {
+      console.error("No more product('s) left to delete.");
+      break;
+    }
   }
 }
